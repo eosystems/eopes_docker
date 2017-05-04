@@ -1,0 +1,49 @@
+version: '2'
+services:
+  mysql:
+    tty: true
+    image: eosystems/mysql-eopes
+    volumes_from:
+      - storage-mysql
+    ports:
+      - "13406:3306"
+    container_name: mysql-eopes
+    build: build/mysql-eopes
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+
+  storage-mysql:
+    tty: true
+    image: eosystems/storage-mysql-eopes
+    container_name: storage-mysql-eopes
+
+  nginx:
+    tty: true
+    image: eosystems/nginx-eopes
+    volumes_from:
+      - storage-eopes
+    container_name: nginx-eopes
+    build: build/nginx-eopes
+    ports:
+      - "10180:80"
+    links:
+      - eopes
+
+  eopes:
+    image: eosystems/eopes
+    volumes_from:
+      - storage-eopes
+    container_name: app-eopes
+    build:
+      context: build/eopes
+      args:
+        gitbranch: "master"
+    ports:
+      - "13100:3000"
+    links:
+      - mysql
+
+  storage-eopes:
+    tty: true
+    image: eosystems/storage-eopes
+    container_name: storage-eopes
